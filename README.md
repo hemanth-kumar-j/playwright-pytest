@@ -58,7 +58,12 @@ pytest --browser chromium --browser webkit -n 2
 pytest --browser chromium --browser firefox --browser webkit -n 3
 ```
 
-### 9. View Test Report
+### 9. Remove Old Screenshots Before Test Run
+```bash
+pytest --remove
+```
+
+### 10. View Test Report
 Open `reports/report.html` in your browser.
 
 ---

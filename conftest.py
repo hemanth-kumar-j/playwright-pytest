@@ -1,9 +1,24 @@
 import os
 import base64
 import pytest
+import logging
 import pytest_html
 from playwright.sync_api import Browser, Page
 from pytest_metadata.plugin import metadata_key
+
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--remove",
+        action="store_true",
+        default=False,
+        help="Remove old screenshots before running tests",
+    )
 
 
 @pytest.fixture(scope="function")
@@ -21,10 +36,20 @@ def page(context) -> Page:
 
 
 def pytest_configure(config):
-    config.stash[metadata_key]["Project"] = "playwright_pytest"
+    remove_old = config.getoption("remove")
+
+    config.stash[metadata_key]["Project"] = "playwright-pytest"
 
     # Ensure the screenshots folder exists
     os.makedirs("screenshots", exist_ok=True)
+
+    if remove_old:
+        logging.info("Removing old screenshots...")
+        for file in os.listdir("screenshots"):
+            try:
+                os.unlink(os.path.join("screenshots", file))
+            except Exception as e:
+                logging.error(f"Error deleting screenshot: {e}")
 
 
 def pytest_html_report_title(report):
