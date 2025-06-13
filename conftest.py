@@ -39,6 +39,9 @@ def pytest_configure(config):
     remove_old = config.getoption("remove")
 
     config.stash[metadata_key]["Project"] = "playwright-pytest"
+    config.stash[metadata_key]["Display Mode"] = (
+        "headed" if config.getoption("headed") else "headless"
+    )
 
     # Ensure the screenshots folder exists
     os.makedirs("screenshots", exist_ok=True)
