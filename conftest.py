@@ -36,9 +36,17 @@ def page(context) -> Page:
 
 
 def pytest_configure(config):
+    browser = config.getoption("browser")
     remove_old = config.getoption("remove")
 
+    # Safely join browser list
+    if isinstance(browser, list):
+        browsers = ", ".join(browser)
+    else:
+        browsers = browser
+
     config.stash[metadata_key]["Project"] = "playwright-pytest"
+    config.stash[metadata_key]["Browser"] = "chromium" if not browser else browsers
     config.stash[metadata_key]["Display Mode"] = (
         "headed" if config.getoption("headed") else "headless"
     )
