@@ -52,18 +52,24 @@ pytest --browser firefox
 pytest --browser webkit
 ```
 
-### 8. Run Tests with Parallel Execution In Parallel Browsers
+### 8. Run Tests with Individual Browsers
+```bash
+pytest --browser chromium --browser firefox --browser webkit
+pytest --browser firefox --browser chromium
+```
+
+### 9. Run Tests with Parallel Execution In Parallel Browsers
 ```bash
 pytest --browser chromium --browser webkit -n 2
 pytest --browser chromium --browser firefox --browser webkit -n 3
 ```
 
-### 9. Remove Old Screenshots Before Test Run
+### 10. Remove Old Screenshots Before Test Run
 ```bash
 pytest --remove
 ```
 
-### 10. View Test Report
+### 11. View Test Report
 Open `reports/report.html` in your browser.
 
 ---
