@@ -84,6 +84,11 @@ def pytest_configure_node(node):
     )
 
 
+@pytest.hookimpl(tryfirst=True)
+def pytest_sessionfinish(session, exitstatus):
+    session.config.stash[metadata_key].pop("Base URL", None)
+
+
 # This hook adds screenshots and page URL to the HTML report on test failure
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
