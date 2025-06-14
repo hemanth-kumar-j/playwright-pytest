@@ -39,6 +39,15 @@ def pytest_configure(config):
     browser = config.getoption("browser")
     remove_old = config.getoption("remove")
 
+    if hasattr(config, "workerinput"):
+        # These are passed from the main process via pytest_configure_node
+        execution_mode = config.workerinput.get("execution_mode", "sequence-tests")
+    else:
+        # This is the main pytest process (not a worker)
+        parallel_xdist = config.getoption("numprocesses") not in [None, 0]
+        execution_mode = "parallel-tests" if parallel_xdist else "sequence-tests"
+        config._execution_mode = execution_mode  # This will be passed to workers
+
     # Safely join browser list
     if isinstance(browser, list):
         browsers = ", ".join(browser)
@@ -46,6 +55,7 @@ def pytest_configure(config):
         browsers = browser
 
     config.stash[metadata_key]["Project"] = "playwright-pytest"
+    config.stash[metadata_key]["Test Execution Mode"] = execution_mode
     config.stash[metadata_key]["Browser"] = "chromium" if not browser else browsers
     config.stash[metadata_key]["Display Mode"] = (
         "headed" if config.getoption("headed") else "headless"
@@ -65,6 +75,13 @@ def pytest_configure(config):
 
 def pytest_html_report_title(report):
     report.title = "Automation Report"
+
+
+def pytest_configure_node(node):
+    # Pass values from main process to xdist worker subprocess
+    node.workerinput["execution_mode"] = getattr(
+        node.config, "_execution_mode", "sequence-tests"
+    )
 
 
 # This hook adds screenshots and page URL to the HTML report on test failure
