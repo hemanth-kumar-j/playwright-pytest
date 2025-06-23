@@ -61,6 +61,13 @@ def pytest_configure(config):
         "headed" if config.getoption("headed") else "headless"
     )
 
+    # Add only if multiple browsers specified
+    if isinstance(browser, list) and len(browser) > 1:
+        if execution_mode == "parallel-tests":
+            config.stash[metadata_key]["Browser Execution Mode"] = "parallel-browsers"
+        else:
+            config.stash[metadata_key]["Browser Execution Mode"] = "individual-browsers"
+
     # Ensure the screenshots folder exists
     os.makedirs("screenshots", exist_ok=True)
 
