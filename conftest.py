@@ -1,10 +1,15 @@
 import os
+import sys
+import glob
 import base64
-import pytest
 import logging
+import subprocess
+
+import pytest
 import pytest_html
 from playwright.sync_api import Browser, Page
 from pytest_metadata.plugin import metadata_key
+from pytest_html_merger.main import merge_html_files
 
 
 logging.basicConfig(
@@ -14,11 +19,66 @@ logging.basicConfig(
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--parallel-browsers",
+        action="store_true",
+        default=False,
+        help="Run each browser's test suite in parallel",
+    )
+    parser.addoption(
         "--remove",
         action="store_true",
         default=False,
         help="Remove old screenshots before running tests",
     )
+
+
+def pytest_cmdline_main(config):
+    # Only trigger this custom runner if --parallel-browsers is used
+    if config.getoption("--parallel-browsers"):
+        browsers = config.getoption("browser")
+        if not browsers:
+            raise pytest.UsageError("Please provide at least one --browser option.")
+
+        os.makedirs("reports", exist_ok=True)
+
+        # Clean old browser-specific reports
+        for f in glob.glob("reports/report_*.html"):
+            try:
+                os.remove(f)
+                logging.info(f"Removed old report: {f}")
+            except Exception as e:
+                logging.error(f"Failed to delete {f}: {e}")
+
+        processes = []
+        for browser in browsers:
+            html_report = f"reports/report_{browser}.html"
+            cmd = [
+                sys.executable,
+                "-m",
+                "pytest",
+                "--browser",
+                browser,
+                "--html",
+                html_report,
+            ]
+            print(f"[Runner] Starting browser: {browser}")
+            processes.append(subprocess.Popen(cmd))
+
+        for proc in processes:
+            proc.wait()
+
+        # merge all reports
+        try:
+            output_file = "reports/report.html"
+            title = "Parallel Browsers Report"
+
+            merge_html_files("reports", output_file, title)
+            print(f"Merged reports to {output_file}")
+        except Exception as e:
+            print(f"Failed to merge reports: {e}")
+
+        # Skip normal pytest execution since we've handled it
+        return 0
 
 
 @pytest.fixture(scope="function")
