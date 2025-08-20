@@ -97,11 +97,11 @@ Just drop your updated image with the same name as the existing baseline.
 
 ### Troubleshooting
 
-If tests fail due to small rendering differences, run with --snapshot-update to regenerate baselines.
+If tests fail due to small rendering differences, run with `--snapshot-update` to regenerate baselines.
 
 Make sure your test environment (browser, OS, resolution) is consistent to avoid false mismatches.
 
-If snapshots keep failing, delete the corresponding image in __snapshots__ and rerun with --snapshot-update.
+If snapshots keep failing, delete the corresponding image in __snapshots__ and rerun with `--snapshot-update`.
 
 ---
 
